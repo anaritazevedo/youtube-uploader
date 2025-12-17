@@ -1,70 +1,145 @@
-# 🎥 YouTube Auto Uploader (Python)
+# YouTube Auto Uploader
 
-Automação para upload de vídeos em massa para o YouTube, com suporte a playlists e organização automática de arquivos.
-
-## 🛠️ Instalação
-
-1. Instale o Python (caso não tenha).
-2. Abra o terminal e instale as dependências do Google:
-   pip install --upgrade google-api-python-client google-auth-oauthlib google-auth-httplib2
+![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg?style=for-the-badge&logo=python)
+![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-funcional-brightgreen.svg?style=for-the-badge)
 
 ---
 
-## 📂 Estrutura de Pastas
-
-Organize a pasta do seu projeto exatamente assim:
-
-/projeto/
-│
-├── inputs/               # Coloque os vídeos aqui (.mp4, .mov, .mkv)
-├── sent/                 # (Automático) O script move os vídeos para cá após o envio
-├── client_secrets.json   # Arquivo de credencial baixado do Google Cloud
-├── config.json           # Arquivo de configuração (veja abaixo)
-└── main.py               # O script do robô
+Uma ferramenta de automação CLI (Command Line Interface) robusta para realizar uploads em massa de vídeos para o YouTube, com suporte a playlists e organização automática de arquivos.
 
 ---
 
-## ⚙️ Configuração (config.json)
+## 📜 Sobre o Projeto
 
-Crie um arquivo chamado `config.json` com o seguinte conteúdo:
+O processo de upload manual de vídeos — preencher títulos, descrições, selecionar tags e esperar o processamento — consome um tempo valioso de qualquer criador de conteúdo. Este projeto foi desenvolvido para eliminar esse gargalo. Utilizando a YouTube Data API v3, o script processa uma pasta inteira de vídeos sequencialmente, realiza o upload com barra de progresso em tempo real, adiciona-os à playlist correta e organiza os arquivos locais, transformando horas de trabalho manual em um único comando.
 
-{
-    "category_id": "20",
-    "privacy_status": "private",
-    "tags": ["gameplay", "clips", "python"],
-    "description_suffix": "\n\nEnviado automaticamente.",
-    "playlist_id": "COLOQUE_AQUI_O_ID_DA_PLAYLIST"
-}
+## ✨ Funcionalidades Principais
 
-* **category_id**: "20" = Jogos | "22" = Pessoas e Blogs.
-* **privacy_status**: "private" (só você vê), "unlisted" (não listado) ou "public" (público).
-* **playlist_id**: O código após `list=` na URL da playlist. Deixe as aspas vazias "" se não quiser usar.
+-   🔄 **Upload em Massa:** Varre a pasta de entrada e processa todos os vídeos (`.mp4`, `.mov`, `.mkv`, etc.) automaticamente.
+-   ⚙️ **Configuração Centralizada:** Títulos, tags, privacidade e categoria são gerenciados via `config.json`.
+-   📑 **Gestão de Playlists:** Adiciona o vídeo recém-enviado diretamente a uma Playlist específica do canal.
+-   ⏳ **Feedback Visual:** Barra de progresso em tempo real no terminal para acompanhar o envio de arquivos pesados.
+-   🔐 **Autenticação Segura:** Implementa o fluxo OAuth 2.0 oficial do Google, garantindo segurança sem expor senhas.
+-   🧹 **Organização Automática:** Move os arquivos processados para a pasta `sent/` após o sucesso, evitando duplicidade.
+-   🚀 **Upload Resumível:** Envia arquivos em pedaços (chunks), tornando o processo estável mesmo em conexões instáveis.
 
----
+## 🛠️ Tecnologias Utilizadas
 
-## ▶️ Como Usar
+| Tecnologia | Propósito |
+| :--- | :--- |
+| **Python 3** | Linguagem principal do script |
+| **YouTube Data API v3** | Interação com os serviços de vídeo do Google |
+| **Google Auth** | `google-auth-oauthlib` para autenticação OAuth2 |
+| **Google API Client** | `google-api-python-client` para chamadas de API |
+| **Git & GitHub** | Controle de versão e portfólio |
 
-1. Jogue os vídeos na pasta `inputs`.
-2. Abra o terminal na pasta do projeto.
-3. Execute o comando:
-   python main.py
+## 🏗️ Arquitetura e Fluxo de Execução
 
-4. **Primeiro Acesso:** O navegador vai abrir.
-   * Faça login na conta do YouTube.
-   * Se aparecer "App não verificado", clique em **Avançado** > **Acessar (inseguro)**.
-   * Clique em **Continuar** para autorizar.
+O fluxo foi desenhado para ser linear e à prova de falhas:
 
----
+```mermaid
+graph TD;
+    A[Início do Script] --> B{Existe config.json?};
+    B -- Sim --> C[Autenticação OAuth2];
+    C --> D[Scan da pasta 'inputs'];
+    D --> E{Existem vídeos?};
+    E -- Sim --> F[Iniciar Loop de Upload];
+    F --> G[Upload com Barra de Progresso];
+    G --> H[Adicionar à Playlist];
+    H --> I[Mover para pasta 'sent'];
+    I --> J{Mais vídeos?};
+    J -- Sim --> F;
+    J -- Não --> K[Fim do Processo];
+    E -- Não --> K;
+```
 
-## ❓ Solução de Problemas
+Nota: Na primeira execução, o script abrirá o navegador para que você autorize o aplicativo na sua conta do YouTube, gerando um token local para usos futuros.
 
-**Erro 403: access_denied**
-* O seu e-mail não está na lista de "Usuários de Teste".
-* **Correção:** Vá no Google Cloud > Tela de consentimento OAuth > Usuários de teste > Adicionar usuários (coloque seu e-mail).
+## 🚀 Começando
 
-**Erro: Quota Exceeded**
-* Você atingiu o limite diário gratuito do YouTube (aprox. 6 vídeos/dia).
-* **Correção:** Espere até as 04:00 AM (horário de Brasília) para resetar.
+Para rodar este projeto na sua máquina, siga os passos abaixo.
 
-**Arquivo client_secrets.json não encontrado**
-* O arquivo JSON baixado do Google não foi renomeado ou não está na mesma pasta do script.
+### Pré-requisitos
+
+-   Python 3.9 ou superior
+-   Git
+-   Uma conta no Google/YouTube
+
+### Instalação e Configuração
+
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/anaritazevedo/youtube-uploader.git](https://github.com/anaritazevedo/youtube-uploader.git)
+    cd youtube-uploader
+    ```
+
+2.  **Instale as dependências:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Configure as Credenciais do Google Cloud:**
+    -   Acesse o [Google Cloud Console](https://console.cloud.google.com/).
+    -   Crie um projeto e ative a **YouTube Data API v3**.
+    -   Configure a "Tela de Consentimento OAuth" (Adicione seu e-mail em "Usuários de Teste").
+    -   Crie credenciais de **ID do Cliente OAuth** (Tipo: Desktop App).
+    -   Baixe o JSON, renomeie para `client_secrets.json` e coloque na raiz do projeto.
+
+4.  **Configure o Arquivo `config.json`:**
+    -   Edite o arquivo `config.json` (ou crie um baseado no exemplo):
+        ```json
+        {
+            "category_id": "20",
+            "privacy_status": "private",
+            "tags": ["python", "automacao", "youtube"],
+            "description_suffix": "\n\nPostado via Script Python.",
+            "playlist_id": "SEU_ID_DA_PLAYLIST_AQUI"
+        }
+        ```
+
+## 💻 Uso
+
+Com os vídeos colocados na pasta `inputs`, execute o comando:
+
+```bash
+python main.py
+```
+O terminal exibirá o progresso de cada arquivo. Após o término, verifique seu canal no YouTube Studio.
+
+├── .gitignore            # Protege suas credenciais de subirem pro GitHub
+
+├── README.md             # Documentação do projeto
+
+├── main.py               # O cérebro do uploader
+
+├── config.json           # Suas preferências de vídeo
+
+├── client_secrets.json   # (NÃO COMITAR) Sua chave de acesso
+
+├── requirements.txt      # Dependências do Python
+
+├── inputs/               # Pasta de origem dos vídeos
+
+└── sent/                 # Pasta de destino (processados)
+
+## 🤝 Como Contribuir
+
+Contribuições são o que tornam a comunidade de código aberto um lugar incrível para aprender, inspirar e criar. Qualquer contribuição que você fizer será **muito apreciada**.
+
+1.  Faça um Fork do Projeto
+2.  Crie sua Feature Branch (`git checkout -b feature/NovaFeature`)
+3.  Faça o Commit de suas alterações (`git commit -m 'Add: nova funcionalidade'`)
+4.  Faça o Push para a Branch (`git push origin feature/NovaFeature`)
+5.  Abra um Pull Request
+
+## ⚖️ Licença
+
+Distribuído sob a Licença MIT.
+
+## 👤 Autora
+
+**Ana Rita Azevedo**
+
+-   [GitHub: @anaritazevedo](https://github.com/anaritazevedo)
+-   [Linkedin: anaritazevedo](https://www.linkedin.com/in/anaritazevedo/)
