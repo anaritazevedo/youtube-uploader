@@ -1,0 +1,12 @@
+# Ignorar arquivos de credenciais e segurança
+client_secrets.json
+token.json
+
+# Ignorar pastas de vídeo
+inputs/
+sent/
+
+# Ignorar arquivos temporários do sistema e Python
+__pycache__/
+*.pyc
+.DS_Store
